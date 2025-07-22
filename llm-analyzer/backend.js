@@ -1,62 +1,92 @@
 
-const express = require("express");
-const fetch = require("node-fetch");
-const cheerio = require("cheerio");
-const cors = require("cors");
+// Written by Corderonegro.be with friendly Ia help
+// fran@corderonegro.be
+// backend.js - Backend Express para analizar sitios web con IA-friendly checks
+
+const express = require('express');
+const fetch = require('node-fetch');
+const cheerio = require('cheerio');
+const cors = require('cors');
 
 const app = express();
+const PORT = process.env.PORT || 3000;
+
 app.use(cors());
 
-app.get("/analyze", async (req, res) => {
-    const { url } = req.query;
-
-    if (!url) {
-        return res.status(400).json({ error: "URL requerida" });
+// Helper para detectar schema FAQ
+function detectFAQSchema(html) {
+    try {
+        const $ = cheerio.load(html);
+        let found = false;
+        $('script[type="application/ld+json"]').each((i, el) => {
+            const content = $(el).html();
+            if (content.includes('"@type":"FAQPage"')) found = true;
+        });
+        return found;
+    } catch (e) {
+        return false;
     }
+}
+
+// Helper para detectar meta author o etiquetas author
+function detectAuthor(html) {
+    const lower = html.toLowerCase();
+    return lower.includes('meta name="author"') || lower.includes('<author') || lower.includes('rel="author"');
+}
+
+// Verificación de WikiData
+async function checkWikidata(domain) {
+    const query = `
+        SELECT ?item WHERE {
+          ?item wdt:P856 ?website .
+          FILTER(CONTAINS(STR(?website), "${domain}"))
+        } LIMIT 1
+    `;
+    const url = 'https://query.wikidata.org/sparql?query=' + encodeURIComponent(query) + '&format=json';
+    try {
+        const res = await fetch(url);
+        const json = await res.json();
+        return json.results.bindings.length > 0;
+    } catch {
+        return false;
+    }
+}
+
+// Endpoint principal
+app.get('/analyze', async (req, res) => {
+    const targetUrl = req.query.url;
+    if (!targetUrl) return res.status(400).json({ error: 'URL es requerida' });
 
     try {
-        const response = await fetch(url);
+        const response = await fetch(targetUrl);
         const html = await response.text();
-        const $ = cheerio.load(html);
+        const domain = new URL(targetUrl).hostname;
 
-        const llmTxtUrl = new URL("/llm.txt", url).href;
-        const llmTxtRes = await fetch(llmTxtUrl);
-        const llmTxt = llmTxtRes.ok;
+        // Intentamos encontrar llm.txt
+        const llmTxtResponse = await fetch(targetUrl.replace(/\/$/, '') + '/llm.txt');
+        const llmTxtFound = llmTxtResponse.status === 200;
 
-        const faqSchema = $('script[type="application/ld+json"]')
-            .toArray()
-            .some(el => {
-                try {
-                    const json = JSON.parse($(el).html());
-                    return json["@type"] === "FAQPage" || (Array.isArray(json) && json.some(j => j["@type"] === "FAQPage"));
-                } catch {
-                    return false;
-                }
-            });
-
-        const author = $("meta[name='author']").attr("content") ||
-                       $("meta[property='article:author']").attr("content") ||
-                       $("a[rel='author']").length > 0;
-
-        const domain = new URL(url).hostname.replace(/^www\./, "");
-        const wikidataRes = await fetch(`https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${domain}&language=es&format=json`);
-        const wikidataJson = await wikidataRes.json();
-        const wikidata = wikidataJson.search && wikidataJson.search.length > 0;
+        const faq = detectFAQSchema(html);
+        const author = detectAuthor(html);
+        const wikidata = await checkWikidata(domain);
 
         res.json({
-            llmTxt,
-            faqSchema,
+            url: targetUrl,
+            llmTxt: llmTxtFound,
+            faqSchema: faq,
             author,
             wikidata,
-            score: calcularScore({ llmTxt, faqSchema, author, wikidata }),
+	    score: calcularScore({ llmTxt, faqSchema, author, wikidata }),
             optimizations: calcularOptimizaciones({ llmTxt, faqSchema, author, wikidata })
         });
     } catch (err) {
-        res.status(500).json({ error: "Error al analizar el sitio." });
+        res.status(500).json({ error: 'No se pudo analizar el sitio', detail: err.message });
     }
 });
 
-function calcularScore(data) {
+app.listen(PORT, () => {
+    console.log(`🔍 LLM Analyzer backend activo en http://localhost:${PORT}`);
+	function calcularScore(data) {
     let score = 100;
     if (!data.llmTxt) score -= 20;
     if (!data.faqSchema) score -= 15;
@@ -65,7 +95,7 @@ function calcularScore(data) {
     return Math.max(0, score);
 }
 
-function calcularOptimizaciones(data) {
+	function calcularOptimizaciones(data) {
     let count = 0;
     if (!data.llmTxt) count++;
     if (!data.faqSchema) count++;
@@ -73,5 +103,4 @@ function calcularOptimizaciones(data) {
     if (!data.wikidata) count++;
     return count;
 }
-
-app.listen(3000, () => console.log("Servidor LLM Analyzer escuchando en puerto 3000"));
+});
