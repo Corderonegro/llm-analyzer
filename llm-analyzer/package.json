@@ -1,0 +1,15 @@
+{
+  "name": "llm-analyzer",
+  "version": "1.0.0",
+  "description": "Herramienta para analizar la visibilidad de un sitio web frente a LLMs",
+  "main": "backend.js",
+  "scripts": {
+    "start": "node backend.js"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.12",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "node-fetch": "^2.6.7"
+  }
+}

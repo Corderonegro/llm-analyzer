@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Visibility Grader - Optimiza tu sitio para motores de IA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #6e8efb 0%, #a777e3 100%);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #6e8efb 0%, #a777e3 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .checklist-item {
+            transition: all 0.3s ease;
+        }
+        .checklist-item:hover {
+            transform: translateX(5px);
+        }
+        .result-card {
+            box-shadow: 0 10px 30px -10px rgba(110, 142, 251, 0.3);
+            transition: all 0.3s ease;
+        }
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px -10px rgba(110, 142, 251, 0.4);
+        }
+        .copy-btn {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .code-block:hover .copy-btn {
+            opacity: 1;
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="font-sans bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white">
+        <div class="container mx-auto px-4 py-12">
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <div class="md:w-1/2 mb-8 md:mb-0">
+                    <h1 class="text-4xl md:text-5xl font-bold mb-4">LLM Visibility Grader</h1>
+                    <p class="text-xl mb-6">Evalúa y optimiza la encontrabilidad de tu sitio web en motores de búsqueda basados en IA</p>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="#grader" class="bg-white text-indigo-600 hover:bg-gray-100 font-semibold py-3 px-6 rounded-lg text-center transition duration-300 pulse-animation">
+                            <i class="fas fa-chart-line mr-2"></i>Probar ahora
+                        </a>
+                        <a href="#features" class="border-2 border-white text-white hover:bg-white hover:text-indigo-600 font-semibold py-3 px-6 rounded-lg text-center transition duration-300">
+                            <i class="fas fa-info-circle mr-2"></i>Más información
+                        </a>
+                    </div>
+                </div>
+                <div class="md:w-1/2">
+                    <img src="https://illustrations.popsy.co/amber/artificial-intelligence.svg" alt="AI Illustration" class="w-full max-w-md mx-auto">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Grader Section -->
+        <section id="grader" class="py-16 bg-white">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold text-center mb-12 gradient-text">Analiza tu sitio web</h2>
+                
+                <div class="max-w-3xl mx-auto bg-gray-100 rounded-xl p-6 shadow-md">
+                    <div class="mb-6">
+                        <label for="website-url" class="block text-lg font-medium text-gray-700 mb-2">
+                            <i class="fas fa-globe mr-2"></i>URL de tu sitio web
+                        </label>
+                        <div class="flex">
+                            <input type="url" id="website-url" placeholder="https://tusitio.com" class="flex-grow px-4 py-3 rounded-l-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            <button id="analyze-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-r-lg font-medium transition duration-300">
+                                <i class="fas fa-search mr-2"></i>Analizar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="loading-indicator" class="hidden text-center py-8">
+                        <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600 mb-4"></div>
+                        <p class="text-gray-600">Analizando tu sitio web con nuestra IA...</p>
+                    </div>
+                    
+                    <div id="results-container" class="hidden mt-8">
+                        <h3 class="text-2xl font-semibold mb-6 text-center">Resultados del análisis</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <div class="result-card bg-white p-6 rounded-xl border border-gray-200">
+                                <div class="text-4xl font-bold gradient-text mb-2" id="score">85</div>
+                                <div class="text-gray-500">Puntuación LLM</div>
+                                <div class="h-2 bg-gray-200 rounded-full mt-2">
+                                    <div class="h-2 bg-indigo-500 rounded-full" style="width: 85%"></div>
+                                </div>
+                            </div>
+                            <div class="result-card bg-white p-6 rounded-xl border border-gray-200">
+                                <div class="text-4xl font-bold gradient-text mb-2" id="optimizations">12</div>
+                                <div class="text-gray-500">Optimizaciones posibles</div>
+                            </div>
+                            <div class="result-card bg-white p-6 rounded-xl border border-gray-200">
+                                <div class="text-4xl font-bold gradient-text mb-2" id="priority">Media</div>
+                                <div class="text-gray-500">Prioridad de mejora</div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl p-6 border border-gray-200">
+                            <h4 class="text-xl font-semibold mb-4">Recomendaciones de optimización</h4>
+                            <div id="recommendations-list" class="space-y-4">
+                                <!-- Dynamic content will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="py-16 bg-gray-100">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold text-center mb-12 gradient-text">¿Qué evaluamos?</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Feature 1 -->
+                    <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition duration-300">
+                        <div class="text-indigo-600 text-4xl mb-4">
+                            <i class="fas fa-map"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">OpenSourceMap</h3>
+                        <p class="text-gray-600">Verificamos la presencia y calidad de los datos en OpenSourceMap para asegurar que los LLMs puedan contextualizar tu ubicación física.</p>
+                    </div>
+                    
+                    <!-- Feature 2 -->
+                    <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition duration-300">
+                        <div class="text-indigo-600 text-4xl mb-4">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">WikiData</h3>
+                        <p class="text-gray-600">Comprobamos si tu entidad está correctamente representada en WikiData, lo que ayuda a los LLMs a entender tu contexto semántico.</p>
+                    </div>
+                    
+                    <!-- Feature 3 -->
+                    <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition duration-300">
+                        <div class="text-indigo-600 text-4xl mb-4">
+                            <i class="fas fa-check-double"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Technical LLM Checks</h3>
+                        <p class="text-gray-600">Evaluamos optimizaciones técnicas específicas para LLMs como estructura de contenido, metadatos y formato de información.</p>
+                    </div>
+                    
+                    <!-- Feature 4 -->
+                    <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition duration-300">
+                        <div class="text-indigo-600 text-4xl mb-4">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">IIM.txt File</h3>
+                        <p class="text-gray-600">Verificamos la existencia y contenido del archivo IIM.txt que guía a los bots de LLM hacia tu contenido más importante.</p>
+                    </div>
+                    
+                    <!-- Feature 5 -->
+                    <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition duration-300">
+                        <div class="text-indigo-600 text-4xl mb-4">
+                            <i class="fas fa-question-circle"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">FAQ Schema</h3>
+                        <p class="text-gray-600">Analizamos el uso de formato Q&A y esquemas estructurados que ayudan a los LLMs a extraer respuestas útiles de tu contenido.</p>
+                    </div>
+                    
+                    <!-- Feature 6 -->
+                    <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition duration-300">
+                        <div class="text-indigo-600 text-4xl mb-4">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Author/E-A-T Info</h3>
+                        <p class="text-gray-600">Revisamos la información de autoría y E-A-T (Expertise, Authoritativeness, Trustworthiness) que los LLMs consideran para evaluar calidad.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Solutions Section -->
+        <section id="solutions" class="py-16 bg-white">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold text-center mb-12 gradient-text">Soluciones para implementar</h2>
+                
+                <!-- Solution 1 -->
+                <div class="mb-16">
+                    <h3 class="text-2xl font-semibold mb-4 flex items-center">
+                        <span class="bg-indigo-100 text-indigo-600 rounded-full w-8 h-8 flex items-center justify-center mr-3">1</span>
+                        Crear archivo IIM.txt
+                    </h3>
+                    <div class="bg-gray-50 p-6 rounded-lg mb-4">
+                        <p class="mb-4">El archivo IIM.txt ayuda a guiar a los bots de LLM hacia tu contenido más importante. Debe colocarse en el directorio raíz de tu sitio web.</p>
+                        
+                        <div class="relative code-block bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto">
+                            <button class="copy-btn absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-white p-1 rounded">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <pre><code># IIM.txt - Important Information for Machines
+# Guía para bots de LLM sobre el contenido más importante de este sitio
+
+Prioridad: 
+- /about: 1.0
+- /services: 0.9
+- /blog: 0.8
+- /contact: 0.9
+
+Contexto:
+- Tipo de negocio: [Describe tu tipo de negocio]
+- Industria: [Tu industria]
+- Ubicación: [Tu ubicación principal]
+- Palabras clave principales: [Tus palabras clave principales]
+
+Actualizado: [Fecha]</code></pre>
+                        </div>
+                        
+                        <div class="mt-6 bg-blue-50 border-l-4 border-blue-500 p-4">
+                            <p class="font-semibold text-blue-800"><i class="fas fa-lightbulb mr-2"></i>Consejo profesional:</p>
+                            <p>Actualiza el archivo IIM.txt cada vez que añadas contenido importante o cambies el enfoque de tu sitio web.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Solution 2 -->
+                <div class="mb-16">
+                    <h3 class="text-2xl font-semibold mb-4 flex items-center">
+                        <span class="bg-indigo-100 text-indigo-600 rounded-full w-8 h-8 flex items-center justify-center mr-3">2</span>
+                        Implementar FAQ Schema
+                    </h3>
+                    <div class="bg-gray-50 p-6 rounded-lg mb-4">
+                        <p class="mb-4">El formato Q&A ayuda a los LLMs a extraer respuestas útiles de tu contenido. Puedes implementarlo como texto simple o con schema estructurado.</p>
+                        
+                        <h4 class="font-semibold mt-4 mb-2">Opción 1: Texto simple</h4>
+                        <div class="relative code-block bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto mb-6">
+                            <button class="copy-btn absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-white p-1 rounded">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <pre><code>&lt;div class="faq-section"&gt;
+  &lt;h3&gt;Preguntas frecuentes&lt;/h3&gt;
+  
+  &lt;div class="faq-item"&gt;
+    &lt;h4&gt;¿Cuál es su horario de atención?&lt;/h4&gt;
+    &lt;p&gt;Nuestro horario de atención es de lunes a viernes de 9:00 a 18:00 horas.&lt;/p&gt;
+  &lt;/div&gt;
+  
+  &lt;div class="faq-item"&gt;
+    &lt;h4&gt;¿Ofrecen servicios internacionales?&lt;/h4&gt;
+    &lt;p&gt;Sí, ofrecemos nuestros servicios en todo el mundo con cobertura en 15 países.&lt;/p&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+                        </div>
+                        
+                        <h4 class="font-semibold mt-4 mb-2">Opción 2: Schema estructurado (recomendado)</h4>
+                        <div class="relative code-block bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto">
+                            <button class="copy-btn absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-white p-1 rounded">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <pre><code>&lt;script type="application/ld+json"&gt;
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "¿Cuál es su horario de atención?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Nuestro horario de atención es de lunes a viernes de 9:00 a 18:00 horas."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "¿Ofrecen servicios internacionales?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Sí, ofrecemos nuestros servicios en todo el mundo con cobertura en 15 países."
+      }
+    }
+  ]
+}
+&lt;/script&gt;</code></pre>
+                        </div>
+                        
+                        <div class="mt-6 bg-blue-50 border-l-4 border-blue-500 p-4">
+                            <p class="font-semibold text-blue-800"><i class="fas fa-lightbulb mr-2"></i>Consejo profesional:</p>
+                            <p>Combina ambas opciones para maximizar la compatibilidad. Usa el texto simple para los usuarios y el schema para los LLMs.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Solution 3 -->
+                <div class="mb-16">
+                    <h3 class="text-2xl font-semibold mb-4 flex items-center">
+                        <span class="bg-indigo-100 text-indigo-600 rounded-full w-8 h-8 flex items-center justify-center mr-3">3</span>
+                        Añadir información de Autor/E-A-T
+                    </h3>
+                    <div class="bg-gray-50 p-6 rounded-lg mb-4">
+                        <p class="mb-4">Los LLMs valoran la información de autoría y E-A-T (Experiencia, Autoridad y Confiabilidad) para evaluar la calidad del contenido.</p>
+                        
+                        <h4 class="font-semibold mt-4 mb-2">Ejemplo para página de autor</h4>
+                        <div class="relative code-block bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto">
+                            <button class="copy-btn absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-white p-1 rounded">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <pre><code>&lt;div class="author-box"&gt;
+  &lt;img src="/images/autor.jpg" alt="[Nombre del autor]" class="author-image"&gt;
+  &lt;div class="author-info"&gt;
+    &lt;h3&gt;[Nombre completo]&lt;/h3&gt;
+    &lt;p class="author-title"&gt;[Título profesional, e.g. "Experto en Marketing Digital"]&lt;/p&gt;
+    &lt;p class="author-bio"&gt;[Breve biografía con credenciales: años de experiencia, especialidades, logros relevantes]&lt;/p&gt;
+    &lt;p class="author-credentials"&gt;
+      &lt;strong&gt;Certificaciones:&lt;/strong&gt; [Lista de certificaciones relevantes]&lt;br&gt;
+      &lt;strong&gt;Experiencia:&lt;/strong&gt; [Años de experiencia] años en [industria/especialidad]&lt;br&gt;
+      &lt;strong&gt;Publicaciones:&lt;/strong&gt; [Libros, artículos, etc.]&lt;br&gt;
+    &lt;/p&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+                        </div>
+                        
+                        <h4 class="font-semibold mt-4 mb-2">Schema estructurado para autor</h4>
+                        <div class="relative code-block bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto">
+                            <button class="copy-btn absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-white p-1 rounded">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <pre><code>&lt;script type="application/ld+json"&gt;
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "[Nombre completo]",
+  "url": "[URL del perfil del autor]",
+  "jobTitle": "[Título profesional]",
+  "description": "[Breve biografía]",
+  "alumniOf": {
+    "@type": "EducationalOrganization",
+    "name": "[Universidad/Institución]"
+  },
+  "hasCredential": {
+    "@type": "EducationalOccupationalCredential",
+    "name": "[Certificación]",
+    "url": "[URL de verificación si está disponible]"
+  },
+  "knowsAbout": ["[Tema 1]", "[Tema 2]", "[Tema 3]"],
+  "sameAs": [
+    "[Perfil LinkedIn]",
+    "[Perfil Twitter]",
+    "[Otros perfiles relevantes]"
+  ]
+}
+&lt;/script&gt;</code></pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Solution 4 -->
+                <div class="mb-16">
+                    <h3 class="text-2xl font-semibold mb-4 flex items-center">
+                        <span class="bg-indigo-100 text-indigo-600 rounded-full w-8 h-8 flex items-center justify-center mr-3">4</span>
+                        Añadir sección de Resumen/TL;DR
+                    </h3>
+                    <div class="bg-gray-50 p-6 rounded-lg mb-4">
+                        <p class="mb-4">Los resúmenes ayudan a los LLMs a captar rápidamente los puntos clave de tu contenido, especialmente en artículos largos.</p>
+                        
+                        <div class="relative code-block bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto">
+                            <button class="copy-btn absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-white p-1 rounded">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <pre><code>&lt;div class="summary-box"&gt;
+  &lt;h3&gt;TL;DR - Resumen rápido&lt;/h3&gt;
+  &lt;ul class="summary-list"&gt;
+    &lt;li&gt;✅ [Punto clave 1 en menos de 10 palabras]&lt;/li&gt;
+    &lt;li&gt;✅ [Punto clave 2 en menos de 10 palabras]&lt;/li&gt;
+    &lt;li&gt;✅ [Punto clave 3 en menos de 10 palabras]&lt;/li&gt;
+    &lt;li&gt;📌 [Conclusión principal en una frase]&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/div&gt;</code></pre>
+                        </div>
+                        
+                        <h4 class="font-semibold mt-4 mb-2">Variación para artículos técnicos</h4>
+                        <div class="relative code-block bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto">
+                            <button class="copy-btn absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-white p-1 rounded">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <pre><code>&lt;div class="technical-summary"&gt;
+  &lt;h3&gt;Key Takeaways&lt;/h3&gt;
+  &lt;div class="takeaway"&gt;
+    &lt;h4&gt;Problema principal&lt;/h4&gt;
+    &lt;p&gt;[Descripción breve del problema]&lt;/p&gt;
+  &lt;/div&gt;
+  &lt;div class="takeaway"&gt;
+    &lt;h4&gt;Solución propuesta&lt;/h4&gt;
+    &lt;p&gt;[Descripción breve de la solución]&lt;/p&gt;
+  &lt;/div&gt;
+  &lt;div class="takeaway"&gt;
+    &lt;h4&gt;Resultados esperados&lt;/h4&gt;
+    &lt;p&gt;[Métrica o resultado clave]&lt;/p&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Solution 5 -->
+                <div>
+                    <h3 class="text-2xl font-semibold mb-4 flex items-center">
+                        <span class="bg-indigo-100 text-indigo-600 rounded-full w-8 h-8 flex items-center justify-center mr-3">5</span>
+                        Optimizar cobertura de enlaces internos
+                    </h3>
+                    <div class="bg-gray-50 p-6 rounded-lg mb-4">
+                        <p class="mb-4">Los enlaces internos ayudan a los LLMs a entender las relaciones entre tus páginas y la estructura de tu contenido.</p>
+                        
+                        <h4 class="font-semibold mt-4 mb-2">Estrategia básica</h4>
+                        <div class="relative code-block bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto">
+                            <button class="copy-btn absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-white p-1 rounded">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <pre><code>&lt;!-- En tu página principal --&gt;
+&lt;div class="related-links"&gt;
+  &lt;h3&gt;Explora más sobre este tema&lt;/h3&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;a href="/guia-completa"&gt;Guía completa sobre [tema principal]&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href="/casos-de-exito"&gt;Casos de éxito reales&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href="/preguntas-frecuentes"&gt;Preguntas frecuentes respondidas&lt;/a&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/div&gt;</code></pre>
+                        </div>
+                        
+                        <h4 class="font-semibold mt-4 mb-2">Enlaces contextuales avanzados</h4>
+                        <div class="relative code-block bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto">
+                            <button class="copy-btn absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-white p-1 rounded">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <pre><code>&lt;p&gt;
+  Al implementar estas estrategias, como explicamos en nuestro 
+  &lt;a href="/articulo-profundo" title="Artículo detallado sobre estrategias avanzadas"&gt;
+    artículo sobre estrategias avanzadas
+  &lt;/a&gt;, puedes mejorar significativamente tus resultados. 
+  Para casos específicos, consulta nuestros 
+  &lt;a href="/ejemplos-practicos" title="Ejemplos prácticos de implementación"&gt;
+    ejemplos prácticos
+  &lt;/a&gt; o el 
+  &lt;a href="/checklist-implementacion" title="Checklist paso a paso para implementación"&gt;
+    checklist de implementación
+  &lt;/a&gt;.
+&lt;/p&gt;</code></pre>
+                        </div>
+                        
+                        <div class="mt-6 bg-blue-50 border-l-4 border-blue-500 p-4">
+                            <p class="font-semibold text-blue-800"><i class="fas fa-lightbulb mr-2"></i>Consejo profesional:</p>
+                            <p>Crea un mapa de clusters de temas donde cada cluster tenga una página pilar (más general) y páginas secundarias (más específicas) que enlacen entre sí y a la página pilar.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="gradient-bg text-white py-16">
+            <div class="container mx-auto px-4 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">¿Listo para optimizar tu sitio para LLMs?</h2>
+                <p class="text-xl mb-8 max-w-2xl mx-auto">Analiza tu sitio web ahora y descubre cómo mejorar tu visibilidad en motores de búsqueda basados en IA.</p>
+                <a href="#grader" class="bg-white text-indigo-600 hover:bg-gray-100 font-semibold py-4 px-8 rounded-lg text-lg inline-block transition duration-300">
+                    <i class="fas fa-chart-line mr-2"></i>Probar el LLM Grader
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">LLM Visibility Grader</h3>
+                    <p class="text-gray-400">Herramienta para evaluar y optimizar la encontrabilidad de sitios web en motores de búsqueda basados en IA.</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">Enlaces rápidos</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#features" class="text-gray-400 hover:text-white transition duration-300">Características</a></li>
+                        <li><a href="#solutions" class="text-gray-400 hover:text-white transition duration-300">Soluciones</a></li>
+                        <li><a href="#grader" class="text-gray-400 hover:text-white transition duration-300">Analizador</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">Contacto</h3>
+                    <p class="text-gray-400 mb-2"><i class="fas fa-envelope mr-2"></i>info@llmvisibility.com</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition duration-300"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition duration-300"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition duration-300"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2023 LLM Visibility Grader. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Sample data for demonstration
+        const sampleRecommendations = [
+            {
+                title: "Falta archivo IIM.txt",
+                description: "Tu sitio no tiene un archivo IIM.txt que guíe a los bots de LLM hacia tu contenido más importante.",
+                priority: "Alta",
+                solution: "solution1"
+            },
+            {
+                title: "Estructura FAQ insuficiente",
+                description: "Solo el 15% de tus páginas clave tienen formato Q&A que los LLMs pueden analizar fácilmente.",
+                priority: "Media",
+                solution: "solution2"
+            },
+            {
+                title: "Información de autor limitada",
+                description: "El 80% de tus artículos no tienen información clara sobre el autor o sus credenciales.",
+                priority: "Alta",
+                solution: "solution3"
+            },
+            {
+                title: "Resúmenes faltantes",
+                description: "Solo el 20% de tus artículos largos incluyen un resumen o sección TL;DR.",
+                priority: "Media",
+                solution: "solution4"
+            },
+            {
+                title: "Enlaces internos débiles",
+                description: "La densidad de enlaces internos entre tus clusters de contenido es 40% menor que el óptimo.",
+                priority: "Baja",
+                solution: "solution5"
+            }
+        ];
+
+        // DOM elements
+        const analyzeBtn = document.getElementById('analyze-btn');
+        const websiteUrl = document.getElementById('website-url');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const resultsContainer = document.getElementById('results-container');
+        const scoreElement = document.getElementById('score');
+        const optimizationsElement = document.getElementById('optimizations');
+        const priorityElement = document.getElementById('priority');
+        const recommendationsList = document.getElementById('recommendations-list');
+
+        // Copy buttons functionality
+        document.querySelectorAll('.copy-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const codeBlock = e.target.closest('.code-block').querySelector('code');
+                navigator.clipboard.writeText(codeBlock.textContent);
+                
+                // Change icon temporarily to checkmark
+                const icon = e.target.querySelector('i');
+                if (icon) {
+                    const originalIcon = icon.className;
+                    icon.className = 'fas fa-check';
+                    setTimeout(() => {
+                        icon.className = originalIcon;
+                    }, 2000);
+                }
+            });
+        });
+
+        // Analyze button click handler
+        analyzeBtn.addEventListener('click', () => {
+            if (!websiteUrl.value) {
+                alert('Por favor ingresa la URL de tu sitio web');
+                return;
+            }
+            
+            // Show loading
+            loadingIndicator.classList.remove('hidden');
+            resultsContainer.classList.add('hidden');
+            
+            // Simulate API call
+            setTimeout(() => {
+                loadingIndicator.classList.add('hidden');
+                showResults();
+                resultsContainer.classList.remove('hidden');
+                
+                // Scroll to results
+                resultsContainer.scrollIntoView({ behavior: 'smooth' });
+            }, 2500);
+        });
+
+        // Display results
+        function showResults() {
+            // Generate random score between 50-95 for demo
+            const randomScore = Math.floor(Math.random() * 45) + 50;
+            scoreElement.textContent = randomScore;
+            scoreElement.parentElement.querySelector('div').style.width = `${randomScore}%`;
+            
+            // Generate random number of optimizations (3-15)
+            const randomOptimizations = Math.floor(Math.random() * 12) + 3;
+            optimizationsElement.textContent = randomOptimizations;
+            
+            // Set priority based on score
+            let priorityText, priorityColor;
+            if (randomScore < 60) {
+                priorityText = "Alta";
+                priorityColor = "text-red-500";
+            } else if (randomScore < 80) {
+                priorityText = "Media";
+                priorityColor = "text-yellow-500";
+            } else {
+                priorityText = "Baja";
+                priorityColor = "text-green-500";
+            }
+            priorityElement.textContent = priorityText;
+            priorityElement.className = `text-4xl font-bold ${priorityColor} mb-2`;
+            
+            // Display recommendations
+            recommendationsList.innerHTML = '';
+            sampleRecommendations.forEach(rec => {
+                const priorityColor = rec.priority === "Alta" ? "bg-red-100 text-red-800" : 
+                                     rec.priority === "Media" ? "bg-yellow-100 text-yellow-800" : 
+                                     "bg-green-100 text-green-800";
+                
+                const recElement = document.createElement('div');
+                recElement.className = 'p-4 border border-gray-200 rounded-lg';
+                recElement.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-semibold">${rec.title}</h4>
+                        <span class="text-xs px-2 py-1 rounded-full ${priorityColor}">${rec.priority} prioridad</span>
+                    </div>
+                    <p class="text-gray-600 mb-3">${rec.description}</p>
+                    <a href="#${rec.solution}" class="text-indigo-600 hover:text-indigo-800 font-medium inline-flex items-center">
+                        Ver solución <i class="fas fa-chevron-right ml-1 text-sm"></i>
+                    </a>
+                `;
+                recommendationsList.appendChild(recElement);
+            });
+        }
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
