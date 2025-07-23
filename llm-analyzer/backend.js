@@ -81,18 +81,33 @@ async function checkWikidata(domain) {
     }
 }
 
+function isValidUrl(url) {
+    try {
+        const parsed = new URL(url.startsWith('http') ? url : `https://${url}`);
+        return parsed.hostname.includes('.');
+    } catch {
+        return false;
+    }
+}
+
 // Endpoint principal
 app.get('/analyze', async (req, res) => {
     const targetUrl = req.query.url;
-    if (!targetUrl) return res.status(400).json({ error: 'URL es requerida' });
+    if (!targetUrl || !isValidUrl(targetUrl)) {
+        return res.status(400).json({ error: 'URL inválida' });
+    }
+
+    let normalizedUrl = targetUrl.trim();
+    if (!/^https?:\/\//i.test(normalizedUrl)) {
+        normalizedUrl = `https://${normalizedUrl}`;
+    }
 
     try {
-        const response = await fetch(targetUrl);
+        const response = await fetch(normalizedUrl);
         const html = await response.text();
-        const domain = new URL(targetUrl).hostname;
+        const domain = new URL(normalizedUrl).hostname;
 
-        // Intentamos encontrar llm.txt
-        const llmTxtResponse = await fetch(targetUrl.replace(/\/$/, '') + '/llm.txt');
+        const llmTxtResponse = await fetch(normalizedUrl.replace(/\/$/, '') + '/llm.txt');
         const llmTxtFound = llmTxtResponse.status === 200;
 
         const faq = detectFAQSchema(html);
@@ -101,7 +116,7 @@ app.get('/analyze', async (req, res) => {
         const wikidata = hasWikiLink || await checkWikidata(domain);
 
         const result = {
-            url: targetUrl,
+            url: normalizedUrl,
             llmTxt: llmTxtFound,
             faqSchema: faq,
             author,
