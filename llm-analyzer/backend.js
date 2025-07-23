@@ -81,6 +81,18 @@ async function checkWikidata(domain) {
     }
 }
 
+function detectOpenStreetMap(html) {
+    return html.includes('openstreetmap.org') || html.includes('leaflet') || html.includes('schema.org/Place') || html.includes('schema.org/PostalAddress');
+}
+
+function detectTechnicalLLMChecks(html) {
+    const $ = cheerio.load(html);
+    const hasMetaDescription = $('meta[name="description"]').length > 0;
+    const hasSemanticTags = $('article, section, main, header').length > 0;
+    const hasLang = $('html[lang]').length > 0;
+    return hasMetaDescription && hasSemanticTags && hasLang;
+}
+
 function isValidUrl(url) {
     try {
         const parsed = new URL(url.startsWith('http') ? url : `https://${url}`);
@@ -114,6 +126,8 @@ app.get('/analyze', async (req, res) => {
         const author = detectAuthor(html);
         const hasWikiLink = detectWikipediaOrWikidataLink(html);
         const wikidata = hasWikiLink || await checkWikidata(domain);
+        const openstreet = detectOpenStreetMap(html);
+        const llmTech = detectTechnicalLLMChecks(html);
 
         const result = {
             url: normalizedUrl,
@@ -121,8 +135,10 @@ app.get('/analyze', async (req, res) => {
             faqSchema: faq,
             author,
             wikidata,
-            score: calcularScore({ llmTxt: llmTxtFound, faqSchema: faq, author, wikidata }),
-            optimizations: calcularOptimizaciones({ llmTxt: llmTxtFound, faqSchema: faq, author, wikidata })
+            openstreet,
+            llmTech,
+            score: calcularScore({ llmTxt: llmTxtFound, faqSchema: faq, author, wikidata, openstreet, llmTech }),
+            optimizations: calcularOptimizaciones({ llmTxt: llmTxtFound, faqSchema: faq, author, wikidata, openstreet, llmTech })
         };
 
         console.log(result); // Log para debugging
@@ -143,6 +159,8 @@ function calcularScore(data) {
     if (!data.faqSchema) score -= 15;
     if (!data.author) score -= 25;
     if (!data.wikidata) score -= 10;
+    if (!data.openstreet) score -= 15;
+    if (!data.llmTech) score -= 15;
     return Math.max(0, score);
 }
 
@@ -152,5 +170,7 @@ function calcularOptimizaciones(data) {
     if (!data.faqSchema) count++;
     if (!data.author) count++;
     if (!data.wikidata) count++;
+    if (!data.openstreet) count++;
+    if (!data.llmTech) count++;
     return count;
 }
