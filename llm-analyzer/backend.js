@@ -36,15 +36,31 @@ function detectFAQSchema(html) {
     return blocks.some(block => block['@type'] === 'FAQPage');
 }
 
-function detectAuthor(html) {
+ffunction detectAuthor(html) {
     const blocks = parseJsonLD(html);
-    return blocks.some(block =>
-        block.author && (
-            typeof block.author === 'object' ||
-            (Array.isArray(block.author) && block.author.length > 0)
-        )
-    );
+
+    return blocks.some(block => {
+        // Caso clásico: author explícito
+        if (block.author) {
+            const author = block.author;
+            if (typeof author === 'object') return true;
+            if (Array.isArray(author) && author.length > 0) return true;
+        }
+
+        // E-A-T ampliado: otros campos posibles
+        if (block.creator && typeof block.creator === 'object') return true;
+        if (block.publisher && typeof block.publisher === 'object') return true;
+
+        // Bloque suelto del tipo Person
+        if (block['@type']) {
+            const type = Array.isArray(block['@type']) ? block['@type'] : [block['@type']];
+            if (type.includes("Person")) return true;
+        }
+
+        return false;
+    });
 }
+
 
 function detectWikipediaOrWikidataLink(html) {
     const blocks = parseJsonLD(html);
