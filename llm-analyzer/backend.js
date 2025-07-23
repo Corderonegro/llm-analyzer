@@ -36,7 +36,7 @@ function detectFAQSchema(html) {
     return blocks.some(block => block['@type'] === 'FAQPage');
 }
 
-ffunction detectAuthor(html) {
+function detectAuthor(html) {
     const blocks = parseJsonLD(html);
 
     return blocks.some(block => {
