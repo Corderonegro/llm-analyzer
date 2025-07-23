@@ -155,12 +155,12 @@ app.listen(PORT, () => {
 // Score y optimizaciones
 function calcularScore(data) {
     let score = 100;
-    if (!data.llmTxt) score -= 20;
-    if (!data.faqSchema) score -= 15;
-    if (!data.author) score -= 25;
-    if (!data.wikidata) score -= 10;
-    if (!data.openstreet) score -= 15;
-    if (!data.llmTech) score -= 15;
+    if (!data.llmTxt) score -= 25;
+    if (!data.faqSchema) score -= 18;
+    if (!data.author) score -= 20;
+    if (!data.wikidata) score -= 15;
+    if (!data.openstreet) score -= 10;
+    if (!data.llmTech) score -= 12;
     return Math.max(0, score);
 }
 
